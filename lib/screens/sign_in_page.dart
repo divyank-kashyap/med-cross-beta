@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert'; // For encoding data
+import 'package:http/http.dart' as http;
 import 'package:medcross/screens/signUpPage.dart'; // Import SignUpPage
 
 class SignInPage extends StatefulWidget {
@@ -14,6 +16,10 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
   late AnimationController _inputBlockController;
   late Animation<double> _inputBlockAnimation;
   double _bottomOffset = 50.0; // Initial bottom offset
+
+  // Controllers to capture the input values
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   void initState() {
@@ -44,7 +50,39 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
   void dispose() {
     _rippleController.dispose();
     _inputBlockController.dispose();
+    _emailController.dispose(); // Clean up controllers
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _signIn() async {
+    final String email = _emailController.text;
+    final String password = _passwordController.text;
+
+    final url = Uri.parse(
+        "http://20.219.27.255/staging/practice_core_api/api/account/login");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode({
+          "Mobile": email, // Send email as Mobile
+          "Password": password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print("Response: ${response.body}");
+      } else {
+        print("Failed to log in: ${response.statusCode}");
+      }
+    } catch (error) {
+      print("Error occurred: $error");
+    }
   }
 
   @override
@@ -167,6 +205,7 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
                           ),
                           const SizedBox(height: 20),
                           TextField(
+                            controller: _emailController, // Link controller
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white,
@@ -179,6 +218,7 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
                           ),
                           const SizedBox(height: 20),
                           TextField(
+                            controller: _passwordController, // Link controller
                             obscureText: true,
                             decoration: InputDecoration(
                               filled: true,
@@ -193,7 +233,7 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
                           const SizedBox(height: 20),
                           ElevatedButton(
                             onPressed: () {
-                              // Handle sign-in logic here
+                              _signIn(); // Call the sign-in method
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFd32f2f),
