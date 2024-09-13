@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'dart:convert'; // For encoding data
+import 'dart:convert'; // For encoding and decoding JSON
 import 'package:http/http.dart' as http;
-import 'package:medcross/screens/signUpPage.dart'; // Import SignUpPage
+import 'signUpPage.dart'; // Ensure correct import of SignUpPage
+
+// Import HomePage or create a placeholder
+import 'homePage.dart'; // Ensure this path is correct and points to HomePage
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -18,7 +21,7 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
   double _bottomOffset = 50.0; // Initial bottom offset
 
   // Controllers to capture the input values
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _mobileController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   @override
@@ -50,17 +53,17 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
   void dispose() {
     _rippleController.dispose();
     _inputBlockController.dispose();
-    _emailController.dispose(); // Clean up controllers
+    _mobileController.dispose(); // Clean up controllers
     _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _signIn() async {
-    final String email = _emailController.text;
+    final String mobile = _mobileController.text;
     final String password = _passwordController.text;
 
     final url = Uri.parse(
-        "http://20.219.27.255/staging/practice_core_api/api/account/login");
+        "http://20.219.27.255/staging/practice_core_api/api/account/rdlogin");
 
     try {
       final response = await http.post(
@@ -70,19 +73,80 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
           "Content-Type": "application/json",
         },
         body: jsonEncode({
-          "Mobile": email, // Send email as Mobile
+          "Mobile": mobile,
           "Password": password,
         }),
       );
 
       if (response.statusCode == 200) {
-        print("Response: ${response.body}");
+        final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+        // Assume the token is returned with key 'token'
+        final String token = responseBody['token'];
+
+        // Retrieve user details using the token
+        final userDetails = await _getUserDetails(token);
+
+        // Navigate to the HomePage after successful login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(), // HomePage route
+          ),
+        );
       } else {
         print("Failed to log in: ${response.statusCode}");
+        _showErrorDialog("Login failed. Please check your credentials.");
       }
     } catch (error) {
       print("Error occurred: $error");
+      _showErrorDialog("An error occurred. Please try again.");
     }
+  }
+
+  Future<Map<String, dynamic>?> _getUserDetails(String token) async {
+    final url = Uri.parse(
+        "http://20.219.27.255/staging/practice_core_api/api/account/userDetails");
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> userDetails = jsonDecode(response.body);
+        print("User Details: $userDetails");
+        return userDetails;
+      } else {
+        print("Failed to retrieve user details: ${response.statusCode}");
+        return null;
+      }
+    } catch (error) {
+      print("Error occurred: $error");
+      return null;
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Okay'),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -141,7 +205,7 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
                       ),
                       Container(
                         padding: const EdgeInsets.all(25),
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
                         ),
@@ -205,14 +269,25 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
                           ),
                           const SizedBox(height: 20),
                           TextField(
-                            controller: _emailController, // Link controller
+                            controller: _mobileController, // Link controller
+                            keyboardType: TextInputType.phone,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white,
-                              labelText: 'Enter Username/Email Address',
-                              labelStyle: const TextStyle(color: Colors.black),
+                              hintText:
+                                  'Enter Mobile Number', // Use hintText instead of labelText
+                              hintStyle: const TextStyle(
+                                  color:
+                                      Colors.black54), // Placeholder text style
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                borderSide: BorderSide(
+                                  color: Colors
+                                      .blue, // Change this to your preferred color for focus
+                                ),
                               ),
                             ),
                           ),
@@ -223,10 +298,18 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white,
-                              labelText: 'Password',
-                              labelStyle: const TextStyle(color: Colors.black),
+                              hintText:
+                                  'Password', // Use hintText instead of labelText
+                              hintStyle: const TextStyle(color: Colors.black54),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                borderSide: BorderSide(
+                                  color: Colors
+                                      .blue, // Change this to your preferred color for focus
+                                ),
                               ),
                             ),
                           ),
@@ -256,7 +339,8 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => const SignUpPage()),
+                                    builder: (context) =>
+                                        const SignUpPage()), // Updated here
                               );
                             },
                             child: const Text(
