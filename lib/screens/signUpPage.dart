@@ -141,28 +141,28 @@ class _SignUpPageState extends State<SignUpPage>
                       ),
                       const SizedBox(height: 20),
                       _buildTextField(
-                        labelText: 'Name',
+                        hintText: 'Name',
                         icon: Icons.person,
                       ),
-                      const SizedBox(height: 20),
                       _buildTextField(
-                        labelText: 'E-mail',
+                        hintText: 'E-mail',
                         icon: Icons.email,
                       ),
-                      const SizedBox(height: 20),
                       _buildTextField(
-                        labelText: 'Phone No.',
+                        hintText: 'Phone No.',
                         icon: Icons.phone,
                       ),
-                      const SizedBox(height: 20),
                       _buildTextField(
-                        labelText: 'Area',
+                        hintText: 'Area',
                         icon: Icons.location_on,
                       ),
-                      const SizedBox(height: 20),
                       _buildTextField(
-                        labelText: "Doctor's Code",
+                        hintText: "Doctor's Code",
                         icon: Icons.medical_services,
+                      ),
+                      _buildTextField(
+                        hintText: 'Phone No.',
+                        icon: Icons.phone,
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton(
@@ -213,13 +213,14 @@ class _SignUpPageState extends State<SignUpPage>
   }
 
   // Method to build text fields with icons
-  Widget _buildTextField({required String labelText, required IconData icon}) {
+  Widget _buildTextField({required String hintText, required IconData icon}) {
     return TextField(
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
-        labelText: labelText,
-        labelStyle: const TextStyle(color: Colors.black),
+        hintText: hintText, // Use hintText instead of labelText
+        hintStyle:
+            const TextStyle(color: Colors.grey), // Customize hint text style
         suffixIcon: Icon(icon, color: Colors.grey), // Icon moved to the right
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
