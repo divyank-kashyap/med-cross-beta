@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:medcross/screens/refer_patient.dart';
-import 'sign_in_page.dart';
-
-// Import your additional pages
-import 'CentreMapPage.dart';
-import 'ask_for_help_page.dart';
-import 'profile_page.dart';
+import 'package:medcross/screens/refer_patient.dart'; // Ensure this file exists
+import 'sign_in_page.dart'; // Ensure this file exists
+import 'CentreMapPage.dart'; // Ensure this file exists
+import 'ask_for_help_page.dart'; // Ensure this file exists
+import 'profile_page.dart'; // Ensure this file exists
+import 'patientFile.dart'
+    as patientFile; // Import the file with PatientListPage
 
 void main() {
   runApp(MyApp());
@@ -21,13 +21,16 @@ class MyApp extends StatelessWidget {
       ),
       home: HomePage(),
       routes: {
-        '/MyProfile': (context) => ProfileApp(),
-        '/referAPatient': (context) => ReferPatient(),
-        '/patientList': (context) => PatientListPage(),
+        '/MyProfile': (context) => ProfilePage(), // Fixed widget name
+        '/referAPatient': (context) => ReferPatientForm(), // Correct widget
+        '/patientList': (context) => const patientFile.PatientListPage(
+            authToken:
+                'your_auth_token'), // Ensure PatientListPage exists in patientFile.dart
         '/HomePage': (context) => HomePage(),
         '/CentreMapPage': (context) => CentreMapPage(),
-        '/askForHelpPage': (context) => AskForHelpPage(),
-        '/profilePage': (context) => ProfileApp(),
+        '/askForHelpPage': (context) => AskForHelpPage(selectedIndex: 0),
+        '/profilePage': (context) =>
+            ProfilePage(), // Ensure this is the correct widget for profile
       },
     );
   }
@@ -270,87 +273,6 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-// Placeholder pages for navigation routes
-class MyProfilePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("My Profile")),
-      body: Center(child: Text("My Profile Page")),
-    );
-  }
-}
-
-class ReferAPatientPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Refer a Patient")),
-      body: Center(child: Text("Refer a Patient Page")),
-    );
-  }
-}
-
-class LocateUsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Locate Us")),
-      body: Center(child: Text("Locate Us Page")),
-    );
-  }
-}
-
-class ContactUsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Contact Us")),
-      body: Center(child: Text("Contact Us Page")),
-    );
-  }
-}
-
-class PatientListPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Patient List")),
-      body: Center(child: Text("Patient List Page")),
-    );
-  }
-}
-
-class CentreMapPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Centre Map")),
-      body: Center(child: Text("Centre Map Page")),
-    );
-  }
-}
-
-class AskForHelpPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Ask for Help")),
-      body: Center(child: Text("Ask for Help Page")),
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Profile Page")),
-      body: Center(child: Text("Profile Page")),
     );
   }
 }
