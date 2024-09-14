@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:convert'; // For encoding and decoding JSON
 import 'package:http/http.dart' as http;
+import 'patientFile.dart'; // Import the PatientListPage for navigation after login
 import 'signUpPage.dart'; // Ensure correct import of SignUpPage
-
-// Import HomePage or create a placeholder
-import 'homePage.dart'; // Ensure this path is correct and points to HomePage
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -81,53 +79,28 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
 
-        // Assume the token is returned with key 'token'
-        final String token = responseBody['token'];
+        if (responseBody.containsKey('token')) {
+          final String token = responseBody['token'];
 
-        // Retrieve user details using the token
-        final userDetails = await _getUserDetails(token);
-
-        // Navigate to the HomePage after successful login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomePage(), // HomePage route
-          ),
-        );
+          // Navigate to PatientDetailsPage with the token
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PatientListPage(authToken: token),
+            ),
+          );
+        } else {
+          print("Invalid response: ${response.body}");
+          _showErrorDialog("Login failed. Invalid response from server.");
+        }
       } else {
         print("Failed to log in: ${response.statusCode}");
+        print("Response body: ${response.body}");
         _showErrorDialog("Login failed. Please check your credentials.");
       }
     } catch (error) {
       print("Error occurred: $error");
       _showErrorDialog("An error occurred. Please try again.");
-    }
-  }
-
-  Future<Map<String, dynamic>?> _getUserDetails(String token) async {
-    final url = Uri.parse(
-        "http://20.219.27.255/staging/practice_core_api/api/account/userDetails");
-
-    try {
-      final response = await http.get(
-        url,
-        headers: {
-          "Accept": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> userDetails = jsonDecode(response.body);
-        print("User Details: $userDetails");
-        return userDetails;
-      } else {
-        print("Failed to retrieve user details: ${response.statusCode}");
-        return null;
-      }
-    } catch (error) {
-      print("Error occurred: $error");
-      return null;
     }
   }
 
@@ -183,24 +156,6 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
                           shape: BoxShape.circle,
                           color: Colors.white
                               .withOpacity(0.1 * (1 - _rippleAnimation.value)),
-                        ),
-                      ),
-                      Container(
-                        width: 180 + 150 * _rippleAnimation.value,
-                        height: 180 + 150 * _rippleAnimation.value,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.red
-                              .withOpacity(0.2 * (1 - _rippleAnimation.value)),
-                        ),
-                      ),
-                      Container(
-                        width: 180 + 100 * _rippleAnimation.value,
-                        height: 180 + 100 * _rippleAnimation.value,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.blue
-                              .withOpacity(0.3 * (1 - _rippleAnimation.value)),
                         ),
                       ),
                       Container(
@@ -274,19 +229,15 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white,
-                              hintText:
-                                  'Enter Mobile Number', // Use hintText instead of labelText
-                              hintStyle: const TextStyle(
-                                  color:
-                                      Colors.black54), // Placeholder text style
+                              hintText: 'Enter Mobile Number',
+                              hintStyle: const TextStyle(color: Colors.black54),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10.0),
-                                borderSide: BorderSide(
-                                  color: Colors
-                                      .blue, // Change this to your preferred color for focus
+                                borderSide: const BorderSide(
+                                  color: Colors.blue,
                                 ),
                               ),
                             ),
@@ -298,17 +249,15 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white,
-                              hintText:
-                                  'Password', // Use hintText instead of labelText
+                              hintText: 'Password',
                               hintStyle: const TextStyle(color: Colors.black54),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10.0),
-                                borderSide: BorderSide(
-                                  color: Colors
-                                      .blue, // Change this to your preferred color for focus
+                                borderSide: const BorderSide(
+                                  color: Colors.blue,
                                 ),
                               ),
                             ),
@@ -319,38 +268,53 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
                               _signIn(); // Call the sign-in method
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFd32f2f),
+                              backgroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 50.0, vertical: 15.0),
+                                vertical: 15,
+                                horizontal: 50,
+                              ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0),
+                                borderRadius: BorderRadius.circular(15),
                               ),
                             ),
                             child: const Text(
                               'Sign In',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.white),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          TextButton(
-                            onPressed: () {
-                              // Navigate to SignUpPage
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const SignUpPage()), // Updated here
-                              );
-                            },
-                            child: const Text(
-                              "Don't have an account? Sign Up",
                               style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white,
+                                fontSize: 20,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'Don\'t have an account?',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              const SizedBox(width: 5),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const SignUpPage()),
+                                  );
+                                },
+                                child: const Text(
+                                  'Sign Up',
+                                  style: TextStyle(
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
@@ -363,11 +327,4 @@ class _SignInPageState extends State<SignInPage> with TickerProviderStateMixin {
       ),
     );
   }
-}
-
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: SignInPage(),
-  ));
 }
